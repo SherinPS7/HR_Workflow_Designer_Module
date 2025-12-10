@@ -17,12 +17,12 @@ interface WorkflowState {
   history: Array<{ nodes: WorkflowNode[]; edges: WorkflowEdge[]; action: string }>;
   currentHistoryIndex: number;
   selectedNodeId: string | null;
-  activeInspectorTab: 'status' | 'details' | 'validation';   // NEW
+  activeInspectorTab: 'status' | 'details' | 'validation';
   validationErrors: ValidationError[];
 
   addNode: (type: NodeType, position?: { x: number; y: number }) => void;
   setSelectedNodeId: (id: string | null) => void;
-  setActiveInspectorTab: (tab: 'status' | 'details' | 'validation') => void; // NEW
+  setActiveInspectorTab: (tab: 'status' | 'details' | 'validation') => void;
   updateNodeData: (id: string, data: Partial<WorkflowNode['data']>) => void;
 
   onConnect: (connection: Connection) => void;
@@ -40,7 +40,7 @@ export const useWorkflowStore = create<WorkflowState>((set, get) => ({
   history: [],
   currentHistoryIndex: -1,
   selectedNodeId: null,
-  activeInspectorTab: 'status',          // NEW default
+  activeInspectorTab: 'status',
   validationErrors: [],
 
   addNode: (type, position = { x: Math.random() * 300 + 100, y: Math.random() * 200 + 100 }) => {
@@ -53,21 +53,24 @@ export const useWorkflowStore = create<WorkflowState>((set, get) => ({
 
     set((state) => {
       const newNodes = [...state.nodes, newNode];
+
       const snapshot = {
         nodes: structuredClone(newNodes),
         edges: structuredClone(state.edges),
         action: `Added ${type} node`,
       };
 
+      const result = validateWorkflow(newNodes, state.edges);
+
       return {
         nodes: newNodes,
+        validationErrors: result.errors,
         history: [...state.history.slice(0, state.currentHistoryIndex + 1), snapshot],
         currentHistoryIndex: Math.min(state.currentHistoryIndex + 1, 19),
       };
     });
   },
 
-  // when a node is selected, also default inspector tab to "status"
   setSelectedNodeId: (id) =>
     set(() => ({
       selectedNodeId: id,
@@ -88,14 +91,16 @@ export const useWorkflowStore = create<WorkflowState>((set, get) => ({
         action: `Updated node ${id}`,
       };
 
+      const result = validateWorkflow(nodes, state.edges);
+
       return {
         nodes,
+        validationErrors: result.errors,
         history: [...state.history.slice(0, state.currentHistoryIndex + 1), snapshot],
         currentHistoryIndex: Math.min(state.currentHistoryIndex + 1, 19),
       };
     }),
 
-  // add edge when user connects two handles
   onConnect: (connection) =>
     set((state) => {
       const newEdges = addEdge(connection, state.edges);
@@ -134,7 +139,6 @@ export const useWorkflowStore = create<WorkflowState>((set, get) => ({
       };
     }),
 
-  // update nodes when dragged/selected/etc.
   onNodesChange: (changes) =>
     set((state) => {
       const newNodes = applyNodeChanges(changes, state.nodes as any) as WorkflowNode[];
@@ -145,8 +149,11 @@ export const useWorkflowStore = create<WorkflowState>((set, get) => ({
         action: 'Updated nodes',
       };
 
+      const result = validateWorkflow(newNodes, state.edges);
+
       return {
         nodes: newNodes,
+        validationErrors: result.errors,
         history: [...state.history.slice(0, state.currentHistoryIndex + 1), snapshot],
         currentHistoryIndex: Math.min(state.currentHistoryIndex + 1, 19),
       };
@@ -163,9 +170,11 @@ export const useWorkflowStore = create<WorkflowState>((set, get) => ({
     if (state.currentHistoryIndex > 0) {
       const prevIndex = state.currentHistoryIndex - 1;
       const prevState = state.history[prevIndex];
+      const result = validateWorkflow(prevState.nodes, prevState.edges);
       set({
         nodes: prevState.nodes,
         edges: prevState.edges,
+        validationErrors: result.errors,
         currentHistoryIndex: prevIndex,
       });
     }
@@ -176,11 +185,16 @@ export const useWorkflowStore = create<WorkflowState>((set, get) => ({
     if (state.currentHistoryIndex < state.history.length - 1) {
       const nextIndex = state.currentHistoryIndex + 1;
       const nextState = state.history[nextIndex];
+      const result = validateWorkflow(nextState.nodes, nextState.edges);
       set({
         nodes: nextState.nodes,
         edges: nextState.edges,
+        validationErrors: result.errors,
         currentHistoryIndex: nextIndex,
       });
     }
   },
 }));
+
+export const useNodeHasError = (nodeId: string) =>
+  useWorkflowStore((s) => s.validationErrors.some((err) => err.nodeId === nodeId));

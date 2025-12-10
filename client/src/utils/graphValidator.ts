@@ -20,11 +20,23 @@ export function validateWorkflow(
   const startNodes = nodes.filter((n) => n.type === 'start');
   const endNodes = nodes.filter((n) => n.type === 'end');
 
+  // Start rules
   if (startNodes.length === 0) {
     errors.push({ code: 'NO_START', message: 'Workflow must contain a Start node.' });
   }
   if (startNodes.length > 1) {
-    errors.push({ code: 'MULTIPLE_START', message: 'Workflow must have exactly one Start node.' });
+    errors.push({
+      code: 'MULTIPLE_START',
+      message: 'Workflow must have exactly one Start node.',
+    });
+  }
+
+  // End rules: at least one End
+  if (endNodes.length === 0) {
+    errors.push({
+      code: 'NO_END',
+      message: 'Workflow must contain at least one End node.',
+    });
   }
 
   const outgoingByNode = new Map<string, number>();
@@ -59,10 +71,12 @@ export function validateWorkflow(
     }
   });
 
-  // Optional: no isolated nodes
+  // Per-node degree rules
   nodes.forEach((n) => {
     const inDeg = incomingByNode.get(n.id) ?? 0;
     const outDeg = outgoingByNode.get(n.id) ?? 0;
+
+    // Completely isolated
     if (inDeg === 0 && outDeg === 0) {
       errors.push({
         code: 'ISOLATED_NODE',
@@ -70,7 +84,59 @@ export function validateWorkflow(
         nodeId: n.id,
       });
     }
+
+    // Non-start nodes should have at least one incoming edge
+    if (n.type !== 'start' && inDeg === 0) {
+      errors.push({
+        code: 'NO_INCOMING',
+        message: 'Node must have at least one incoming connection.',
+        nodeId: n.id,
+      });
+    }
+
+    // Non-end nodes should have at least one outgoing edge
+    if (n.type !== 'end' && outDeg === 0) {
+      errors.push({
+        code: 'NO_OUTGOING',
+        message: 'Node must have at least one outgoing connection.',
+        nodeId: n.id,
+      });
+    }
   });
+
+  // Reachability from Start (if exactly one start)
+  if (startNodes.length === 1) {
+    const start = startNodes[0];
+
+    const adj = new Map<string, string[]>();
+    edges.forEach((e) => {
+      if (!e.source || !e.target) return;
+      if (!adj.has(e.source)) adj.set(e.source, []);
+      adj.get(e.source)!.push(e.target);
+    });
+
+    const visited = new Set<string>();
+    const stack = [start.id];
+    while (stack.length) {
+      const cur = stack.pop()!;
+      if (visited.has(cur)) continue;
+      visited.add(cur);
+      const neigh = adj.get(cur) ?? [];
+      neigh.forEach((n) => {
+        if (!visited.has(n)) stack.push(n);
+      });
+    }
+
+    nodes.forEach((n) => {
+      if (!visited.has(n.id)) {
+        errors.push({
+          code: 'UNREACHABLE',
+          message: 'Node is not reachable from the Start node.',
+          nodeId: n.id,
+        });
+      }
+    });
+  }
 
   return { errors };
 }

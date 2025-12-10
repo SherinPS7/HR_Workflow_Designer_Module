@@ -33,15 +33,7 @@ export const Header: React.FC<HeaderProps> = ({
         </Box>
 
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-          <Button
-            variant="outlined"
-            color="inherit"
-            size="small"
-            onClick={handleValidate}     // use handler
-            sx={{ textTransform: 'none', borderRadius: 12 }}
-          >
-            Validate
-          </Button>
+         
 
           <IconButton
             onClick={onUndo}
