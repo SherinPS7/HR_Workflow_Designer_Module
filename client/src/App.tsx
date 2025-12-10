@@ -10,6 +10,7 @@ import { useWorkflowStore } from './hooks/useWorkflowStore';
 import { theme } from './theme';
 import { InspectorPanel } from './components/InspectorPanel';
 
+import { ReactFlowProvider } from '@xyflow/react';
 // Responsive slide width (still used for right button offset)
 const SLIDE_WIDTH = 'clamp(260px, 30vw, 420px)';
 
@@ -73,8 +74,9 @@ const App: React.FC = () => {
               height: '100%',
             }}
           >
+            <ReactFlowProvider>
             <Canvas />
-
+      </ReactFlowProvider>
             {/* Right edge vertical button group */}
             <Box
               sx={{

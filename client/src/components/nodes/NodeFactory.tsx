@@ -4,6 +4,19 @@ import { Box, Typography } from '@mui/material';
 import { PlayArrow, TaskAlt, CheckCircle, SmartToy, Stop } from '@mui/icons-material';
 import { useNodeHasError } from '../../hooks/useWorkflowStore';
 
+const BASE_WIDTH = 140;
+const BASE_HEIGHT = 90;
+
+const baseNodeBox = {
+  width: BASE_WIDTH,
+  height: BASE_HEIGHT,
+  transform: 'scale(1)',
+  transition: 'box-shadow 120ms ease, transform 120ms ease',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+} as const;
+
 const selectedStyle = {
   boxShadow: '0 0 0 2px #2563EB, 0 12px 32px rgba(37,99,235,0.5)',
   transform: 'scale(1.03)',
@@ -17,22 +30,14 @@ export const StartNode = ({ id, data, selected }: NodeProps) => {
   return (
     <Box
       sx={{
-        width: 120,
-        height: 80,
+        ...baseNodeBox,
         borderRadius: '50% 20px 50% 20px',
         background: 'linear-gradient(135deg, #4CAF50, #81C784)',
         boxShadow: hasError ? errorShadow : '0 8px 32px rgba(76, 175, 80, 0.4)',
-        transform: 'scale(1)',
-        transition: 'box-shadow 120ms ease, transform 120ms ease',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
         ...(selected ? selectedStyle : {}),
       }}
     >
-      {/* Only source handle: start can connect out but not receive edges */}
       <Handle type="source" position={Position.Right} style={{ right: -8 }} />
-
       <Box sx={{ textAlign: 'center', color: 'white' }}>
         <PlayArrow sx={{ fontSize: 28, mb: 0.5 }} />
         <Typography variant="caption" sx={{ fontWeight: 700, fontSize: '0.75rem' }}>
@@ -49,17 +54,12 @@ export const TaskNode = ({ id, data, selected }: NodeProps) => {
   return (
     <Box
       sx={{
-        width: 140,
-        height: 90,
+        ...baseNodeBox,
         borderRadius: 12,
         background: 'linear-gradient(135deg, #2196F3, #64B5F6)',
         boxShadow: hasError ? errorShadow : '0 8px 32px rgba(33, 150, 243, 0.4)',
-        transform: 'scale(1)',
-        transition: 'box-shadow 120ms ease, transform 120ms ease',
-        p: 2,
-        display: 'flex',
         flexDirection: 'column',
-        alignItems: 'center',
+        p: 2,
         ...(selected ? selectedStyle : {}),
       }}
     >
@@ -79,17 +79,12 @@ export const ApprovalNode = ({ id, data, selected }: NodeProps) => {
   return (
     <Box
       sx={{
+        ...baseNodeBox,
         position: 'relative',
-        width: 100,
-        height: 100,
         clipPath: 'polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%)',
         background: 'linear-gradient(135deg, #FF9800, #FFB74D)',
         boxShadow: hasError ? errorShadow : '0 8px 32px rgba(255, 152, 0, 0.4)',
         transform: 'rotate(45deg)',
-        transition: 'box-shadow 120ms ease, transform 120ms ease',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
         ...(selected ? { ...selectedStyle, transform: 'rotate(45deg) scale(1.03)' } : {}),
       }}
     >
@@ -139,17 +134,12 @@ export const AutomatedNode = ({ id, data, selected }: NodeProps) => {
   return (
     <Box
       sx={{
+        ...baseNodeBox,
         position: 'relative',
-        width: 110,
-        height: 95,
-        clipPath: 'polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%)',
+        clipPath:
+          'polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%)',
         background: 'linear-gradient(135deg, #360185, #8F0177)',
         boxShadow: hasError ? errorShadow : '0 12px 40px rgba(54, 1, 133, 0.5)',
-        transform: 'scale(1)',
-        transition: 'box-shadow 120ms ease, transform 120ms ease',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
         ...(selected ? selectedStyle : {}),
       }}
     >
@@ -199,16 +189,10 @@ export const EndNode = ({ id, data, selected }: NodeProps) => {
   return (
     <Box
       sx={{
-        width: 120,
-        height: 80,
+        ...baseNodeBox,
         borderRadius: '20px 50% 20px 50%',
         background: 'linear-gradient(135deg, #F44336, #E57373)',
         boxShadow: hasError ? errorShadow : '0 8px 32px rgba(244, 67, 54, 0.4)',
-        transform: 'scale(1)',
-        transition: 'box-shadow 120ms ease, transform 120ms ease',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
         ...(selected ? selectedStyle : {}),
       }}
     >

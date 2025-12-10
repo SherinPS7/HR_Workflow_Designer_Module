@@ -1,3 +1,4 @@
+// src/components/Sidebar/Sidebar.tsx
 import React from 'react';
 import {
   Paper,
@@ -12,19 +13,24 @@ import {
   SmartToy,
   Stop,
 } from '@mui/icons-material';
-import { useWorkflowStore } from '../../hooks/useWorkflowStore';
 import type { NodeType } from '../../types/workflow.types';
 
 const nodeConfigs: Array<{ type: NodeType; label: string; Icon: React.ElementType }> = [
-  { type: 'start',        label: 'Start Node',     Icon: PlayArrow },
-  { type: 'task',         label: 'Task Node',      Icon: TaskAlt },
-  { type: 'approval',     label: 'Approval Node',  Icon: CheckCircle },
-  { type: 'automatedStep',label: 'Automated Node',Icon: SmartToy },
-  { type: 'end',          label: 'End Node',       Icon: Stop },
+  { type: 'start',         label: 'Start Node',      Icon: PlayArrow },
+  { type: 'task',          label: 'Task Node',       Icon: TaskAlt },
+  { type: 'approval',      label: 'Approval Node',   Icon: CheckCircle },
+  { type: 'automatedStep', label: 'Automated Node',  Icon: SmartToy },
+  { type: 'end',           label: 'End Node',        Icon: Stop },
 ];
 
 export const Sidebar: React.FC = () => {
-  const { addNode } = useWorkflowStore();
+  const onDragStart = (
+    event: React.DragEvent<HTMLButtonElement>,
+    nodeType: NodeType,
+  ) => {
+    event.dataTransfer.setData('application/reactflow', nodeType);
+    event.dataTransfer.effectAllowed = 'move';
+  };
 
   return (
     <Paper
@@ -49,7 +55,8 @@ export const Sidebar: React.FC = () => {
             fullWidth
             variant="outlined"
             startIcon={<Icon />}
-            onClick={() => addNode(type)}
+            draggable
+            onDragStart={(e) => onDragStart(e, type)}
             sx={{
               justifyContent: 'flex-start',
               textTransform: 'none',
