@@ -1,8 +1,7 @@
+// src/components/nodes/NodeFactory.tsx
 import { Handle, Position, NodeProps } from '@xyflow/react';
 import { Box, Typography } from '@mui/material';
-import {
-  PlayArrow, TaskAlt, CheckCircle, SmartToy, Stop
-} from '@mui/icons-material';
+import { PlayArrow, TaskAlt, CheckCircle, SmartToy, Stop } from '@mui/icons-material';
 
 const selectedStyle = {
   boxShadow: '0 0 0 2px #2563EB, 0 12px 32px rgba(37,99,235,0.5)',
@@ -25,8 +24,9 @@ export const StartNode = ({ data, selected }: NodeProps) => (
       ...(selected ? selectedStyle : {}),
     }}
   >
+    {/* Only source handle: start can connect out but not receive edges */}
     <Handle type="source" position={Position.Right} style={{ right: -8 }} />
-    <Handle type="target" position={Position.Left} style={{ left: -8 }} />
+
     <Box sx={{ textAlign: 'center', color: 'white' }}>
       <PlayArrow sx={{ fontSize: 28, mb: 0.5 }} />
       <Typography variant="caption" sx={{ fontWeight: 700, fontSize: '0.75rem' }}>
@@ -35,6 +35,7 @@ export const StartNode = ({ data, selected }: NodeProps) => (
     </Box>
   </Box>
 );
+
 
 export const TaskNode = ({ data, selected }: NodeProps) => (
   <Box
@@ -65,6 +66,7 @@ export const TaskNode = ({ data, selected }: NodeProps) => (
 export const ApprovalNode = ({ data, selected }: NodeProps) => (
   <Box
     sx={{
+      position: 'relative',
       width: 100,
       height: 100,
       clipPath: 'polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%)',
@@ -78,8 +80,36 @@ export const ApprovalNode = ({ data, selected }: NodeProps) => (
       ...(selected ? { ...selectedStyle, transform: 'rotate(45deg) scale(1.03)' } : {}),
     }}
   >
-    <Handle type="source" position={Position.Right} style={{ right: -8, top: '50%' }} />
-    <Handle type="target" position={Position.Left} style={{ left: -8, top: '50%' }} />
+    <Handle
+      type="target"
+      position={Position.Left}
+      style={{
+        left: -12,
+        top: '50%',
+        transform: 'translateY(-50%)',
+        width: 14,
+        height: 14,
+        background: '#111',
+        borderRadius: '50%',
+        border: '2px solid white',
+        zIndex: 10,
+      }}
+    />
+    <Handle
+      type="source"
+      position={Position.Right}
+      style={{
+        right: -12,
+        top: '50%',
+        transform: 'translateY(-50%)',
+        width: 14,
+        height: 14,
+        background: '#111',
+        borderRadius: '50%',
+        border: '2px solid white',
+        zIndex: 10,
+      }}
+    />
     <Box sx={{ transform: 'rotate(-45deg)', textAlign: 'center', color: 'white' }}>
       <CheckCircle sx={{ fontSize: 28 }} />
       <Typography variant="caption" sx={{ fontWeight: 700, fontSize: '0.7rem', mt: 0.5 }}>
@@ -92,6 +122,7 @@ export const ApprovalNode = ({ data, selected }: NodeProps) => (
 export const AutomatedNode = ({ data, selected }: NodeProps) => (
   <Box
     sx={{
+      position: 'relative',
       width: 110,
       height: 95,
       clipPath: 'polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%)',
@@ -105,8 +136,36 @@ export const AutomatedNode = ({ data, selected }: NodeProps) => (
       ...(selected ? selectedStyle : {}),
     }}
   >
-    <Handle type="source" position={Position.Bottom} style={{ bottom: -8 }} />
-    <Handle type="target" position={Position.Top} style={{ top: -8 }} />
+    <Handle
+      type="target"
+      position={Position.Top}
+      style={{
+        top: -12,
+        left: '50%',
+        transform: 'translateX(-50%)',
+        width: 14,
+        height: 14,
+        background: '#111',
+        borderRadius: '50%',
+        border: '2px solid white',
+        zIndex: 10,
+      }}
+    />
+    <Handle
+      type="source"
+      position={Position.Bottom}
+      style={{
+        bottom: -12,
+        left: '50%',
+        transform: 'translateX(-50%)',
+        width: 14,
+        height: 14,
+        background: '#111',
+        borderRadius: '50%',
+        border: '2px solid white',
+        zIndex: 10,
+      }}
+    />
     <Box sx={{ textAlign: 'center', color: 'white' }}>
       <SmartToy sx={{ fontSize: 28 }} />
       <Typography variant="caption" sx={{ fontWeight: 600, fontSize: '0.7rem', mt: 0.5 }}>
