@@ -17,10 +17,12 @@ interface WorkflowState {
   history: Array<{ nodes: WorkflowNode[]; edges: WorkflowEdge[]; action: string }>;
   currentHistoryIndex: number;
   selectedNodeId: string | null;
+  activeInspectorTab: 'status' | 'details' | 'validation';   // NEW
   validationErrors: ValidationError[];
 
   addNode: (type: NodeType, position?: { x: number; y: number }) => void;
   setSelectedNodeId: (id: string | null) => void;
+  setActiveInspectorTab: (tab: 'status' | 'details' | 'validation') => void; // NEW
   updateNodeData: (id: string, data: Partial<WorkflowNode['data']>) => void;
 
   onConnect: (connection: Connection) => void;
@@ -38,6 +40,7 @@ export const useWorkflowStore = create<WorkflowState>((set, get) => ({
   history: [],
   currentHistoryIndex: -1,
   selectedNodeId: null,
+  activeInspectorTab: 'status',          // NEW default
   validationErrors: [],
 
   addNode: (type, position = { x: Math.random() * 300 + 100, y: Math.random() * 200 + 100 }) => {
@@ -64,7 +67,14 @@ export const useWorkflowStore = create<WorkflowState>((set, get) => ({
     });
   },
 
-  setSelectedNodeId: (id) => set({ selectedNodeId: id }),
+  // when a node is selected, also default inspector tab to "status"
+  setSelectedNodeId: (id) =>
+    set(() => ({
+      selectedNodeId: id,
+      activeInspectorTab: 'details',
+    })),
+
+  setActiveInspectorTab: (tab) => set({ activeInspectorTab: tab }),
 
   updateNodeData: (id, data) =>
     set((state) => {
@@ -96,14 +106,15 @@ export const useWorkflowStore = create<WorkflowState>((set, get) => ({
         action: 'Connected nodes',
       };
 
+      const result = validateWorkflow(state.nodes, newEdges);
       return {
         edges: newEdges,
+        validationErrors: result.errors,
         history: [...state.history.slice(0, state.currentHistoryIndex + 1), snapshot],
         currentHistoryIndex: Math.min(state.currentHistoryIndex + 1, 19),
       };
     }),
 
-  // update edges on drag/delete/etc.
   onEdgesChange: (changes) =>
     set((state) => {
       const newEdges = applyEdgeChanges(changes, state.edges);
@@ -114,35 +125,32 @@ export const useWorkflowStore = create<WorkflowState>((set, get) => ({
         action: 'Updated edges',
       };
 
+      const result = validateWorkflow(state.nodes, newEdges);
       return {
         edges: newEdges,
+        validationErrors: result.errors,
         history: [...state.history.slice(0, state.currentHistoryIndex + 1), snapshot],
         currentHistoryIndex: Math.min(state.currentHistoryIndex + 1, 19),
       };
     }),
 
-  // NEW: update nodes when dragged/selected/etc.
-  // NEW: update nodes when dragged/selected/etc.
-onNodesChange: (changes) =>
-  set((state) => {
-    const newNodes = applyNodeChanges(
-      changes,
-      state.nodes as any,          // help TS here
-    ) as WorkflowNode[];           // cast to your type
+  // update nodes when dragged/selected/etc.
+  onNodesChange: (changes) =>
+    set((state) => {
+      const newNodes = applyNodeChanges(changes, state.nodes as any) as WorkflowNode[];
 
-    const snapshot = {
-      nodes: structuredClone(newNodes),
-      edges: structuredClone(state.edges),
-      action: 'Updated nodes',
-    };
+      const snapshot = {
+        nodes: structuredClone(newNodes),
+        edges: structuredClone(state.edges),
+        action: 'Updated nodes',
+      };
 
-    return {
-      nodes: newNodes,
-      history: [...state.history.slice(0, state.currentHistoryIndex + 1), snapshot],
-      currentHistoryIndex: Math.min(state.currentHistoryIndex + 1, 19),
-    };
-  }),
-
+      return {
+        nodes: newNodes,
+        history: [...state.history.slice(0, state.currentHistoryIndex + 1), snapshot],
+        currentHistoryIndex: Math.min(state.currentHistoryIndex + 1, 19),
+      };
+    }),
 
   runValidation: () => {
     const { nodes, edges } = get();

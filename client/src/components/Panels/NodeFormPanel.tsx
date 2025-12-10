@@ -1,6 +1,7 @@
 import React, { ChangeEvent } from 'react';
 import { Paper, Typography, Box, TextField, MenuItem } from '@mui/material';
 import { useWorkflowStore } from '../../hooks/useWorkflowStore';
+
 const ROLE_OPTIONS = ['HR', 'Manager', 'IT', 'Finance', 'Other'];
 const APPROVER_ROLES = ['Manager', 'HRBP', 'Director'];
 
@@ -62,7 +63,7 @@ export const NodeFormPanel: React.FC = () => {
         {String(type).toUpperCase()} node
       </Typography>
 
-      {/* Common fields */}
+      {/* Common title field for all nodes */}
       <Box>
         <Typography variant="subtitle2" color="text.secondary">
           Title
@@ -76,40 +77,42 @@ export const NodeFormPanel: React.FC = () => {
         />
       </Box>
 
-      <Box>
-        <Typography variant="subtitle2" color="text.secondary">
-          Assignee
-        </Typography>
-        <TextField
-          size="small"
-          fullWidth
-          value={String(data?.assignee ?? '')}
-          onChange={handleChange('assignee')}
-          placeholder="e.g. John Doe"
-        />
-      </Box>
+      {/* START NODE FIELDS */}
+      {type === 'start' && (
+        <>
+          <Box>
+            <Typography variant="subtitle2" color="text.secondary">
+              Start title
+            </Typography>
+            <TextField
+              size="small"
+              fullWidth
+              value={String(data?.startTitle ?? '')}
+              onChange={handleChange('startTitle')}
+              placeholder="e.g. New Hire Onboarding"
+            />
+          </Box>
 
-      <Box>
-        <Typography variant="subtitle2" color="text.secondary">
-          Role
-        </Typography>
-        <TextField
-          select
-          size="small"
-          fullWidth
-          value={String(data?.role ?? '')}
-          onChange={handleChange('role')}
-          placeholder="Select role"
-        >
-          {ROLE_OPTIONS.map((role) => (
-            <MenuItem key={role} value={role}>
-              {role}
-            </MenuItem>
-          ))}
-        </TextField>
-      </Box>
+          <Box sx={{ display: 'flex', gap: 1 }}>
+            <TextField
+              size="small"
+              fullWidth
+              label="Metadata key"
+              value={String(data?.metaKey ?? '')}
+              onChange={handleChange('metaKey')}
+            />
+            <TextField
+              size="small"
+              fullWidth
+              label="Metadata value"
+              value={String(data?.metaValue ?? '')}
+              onChange={handleChange('metaValue')}
+            />
+          </Box>
+        </>
+      )}
 
-      {/* Type-specific sections */}
+      {/* TASK NODE FIELDS */}
       {type === 'task' && (
         <>
           <Box>
@@ -126,6 +129,40 @@ export const NodeFormPanel: React.FC = () => {
               placeholder="Describe this task"
             />
           </Box>
+
+          <Box>
+            <Typography variant="subtitle2" color="text.secondary">
+              Assignee
+            </Typography>
+            <TextField
+              size="small"
+              fullWidth
+              value={String(data?.assignee ?? '')}
+              onChange={handleChange('assignee')}
+              placeholder="e.g. John Doe"
+            />
+          </Box>
+
+          <Box>
+            <Typography variant="subtitle2" color="text.secondary">
+              Role
+            </Typography>
+            <TextField
+              select
+              size="small"
+              fullWidth
+              value={String(data?.role ?? '')}
+              onChange={handleChange('role')}
+              placeholder="Select role"
+            >
+              {ROLE_OPTIONS.map((role) => (
+                <MenuItem key={role} value={role}>
+                  {role}
+                </MenuItem>
+              ))}
+            </TextField>
+          </Box>
+
           <Box>
             <Typography variant="subtitle2" color="text.secondary">
               Due date
@@ -142,6 +179,7 @@ export const NodeFormPanel: React.FC = () => {
         </>
       )}
 
+      {/* APPROVAL NODE FIELDS */}
       {type === 'approval' && (
         <>
           <Box>
@@ -179,6 +217,7 @@ export const NodeFormPanel: React.FC = () => {
         </>
       )}
 
+      {/* AUTOMATED STEP NODE FIELDS */}
       {type === 'automatedStep' && (
         <>
           <Box>
@@ -210,6 +249,7 @@ export const NodeFormPanel: React.FC = () => {
         </>
       )}
 
+      {/* END NODE FIELDS */}
       {type === 'end' && (
         <>
           <Box>
@@ -228,7 +268,7 @@ export const NodeFormPanel: React.FC = () => {
           </Box>
           <Box>
             <Typography variant="subtitle2" color="text.secondary">
-              Show summary flag
+              Summary flag (true / false)
             </Typography>
             <TextField
               size="small"

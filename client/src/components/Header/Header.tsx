@@ -1,3 +1,4 @@
+// src/components/Header/Header.tsx
 import React from 'react';
 import { AppBar, Toolbar, Typography, Chip, IconButton, Box, Button } from '@mui/material';
 import { Undo, Redo } from '@mui/icons-material';
@@ -7,10 +8,21 @@ interface HeaderProps {
   onUndo: () => void;
   onRedo: () => void;
   currentHistoryIndex: number;
+  onValidate: () => void;              // NEW
 }
 
-export const Header: React.FC<HeaderProps> = ({ onUndo, onRedo, currentHistoryIndex }) => {
+export const Header: React.FC<HeaderProps> = ({
+  onUndo,
+  onRedo,
+  currentHistoryIndex,
+  onValidate,                           // NEW
+}) => {
   const runValidation = useWorkflowStore((s) => s.runValidation);
+
+  const handleValidate = () => {
+    runValidation();
+    onValidate();
+  };
 
   return (
     <AppBar position="static" color="primary" elevation={2}>
@@ -25,7 +37,7 @@ export const Header: React.FC<HeaderProps> = ({ onUndo, onRedo, currentHistoryIn
             variant="outlined"
             color="inherit"
             size="small"
-            onClick={runValidation}
+            onClick={handleValidate}     // use handler
             sx={{ textTransform: 'none', borderRadius: 12 }}
           >
             Validate
