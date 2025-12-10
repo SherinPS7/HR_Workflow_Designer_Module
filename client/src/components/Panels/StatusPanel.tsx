@@ -8,7 +8,7 @@ export const StatusPanel: React.FC = () => {
   return (
     <Paper sx={{ width: 280, height: '100%', p: 3, borderLeft: 1, borderColor: 'divider' }} elevation={1}>
       <Typography variant="h6" gutterBottom sx={{ mb: 3 }}>
-        📊 Status
+        Status
       </Typography>
       
       <Box sx={{ mb: 2 }}>

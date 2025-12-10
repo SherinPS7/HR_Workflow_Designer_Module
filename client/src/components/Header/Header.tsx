@@ -19,10 +19,10 @@ export const Header: React.FC<HeaderProps> = ({ onUndo, onRedo, currentHistoryIn
         </Box>
         
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-          <IconButton onClick={onUndo} disabled={currentHistoryIndex <= 0} color="inherit">
+          <IconButton onClick={onUndo} disabled={currentHistoryIndex <= 0} color="inherit" title="Undo">
             <Undo />
           </IconButton>
-          <IconButton onClick={onRedo} disabled={currentHistoryIndex >= 19} color="inherit">
+          <IconButton onClick={onRedo} disabled={currentHistoryIndex >= 19} color="inherit" title="Redo">
             <Redo />
           </IconButton>
           <Chip label={`H:${currentHistoryIndex + 1}/20`} size="small" color="secondary" />
