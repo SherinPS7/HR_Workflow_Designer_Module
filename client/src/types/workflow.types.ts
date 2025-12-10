@@ -3,7 +3,9 @@ import type { Node, Edge } from '@xyflow/react';
 
 export interface NodeData {
   label: string;
-  [key: string]: any;  // Flexible for form data
+  assignee?: string;
+  role?: string;
+  [key: string]: any;  // Flexible for form data (Phase 3+)
 }
 
 export type WorkflowNode = Node<NodeData>;
@@ -13,7 +15,7 @@ export const NODE_TYPES = {
   START: 'start' as const,
   TASK: 'task' as const,
   APPROVAL: 'approval' as const,
-  AUTOMATED_STEP: 'automatedStep' as const,
+  AUTOMATED_STEP: 'automatedStep' as const,  // ✅ Keep your naming
   END: 'end' as const
 } as const;
 

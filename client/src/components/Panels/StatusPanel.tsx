@@ -8,13 +8,13 @@ export const StatusPanel: React.FC = () => {
   return (
     <Paper sx={{ width: 280, height: '100%', p: 3, borderLeft: 1, borderColor: 'divider' }} elevation={1}>
       <Typography variant="h6" gutterBottom sx={{ mb: 3 }}>
-        Status
+        Status Dashboard
       </Typography>
       
       <Box sx={{ mb: 2 }}>
         <Chip 
-          label={`${nodes.length} nodes`} 
-          color={nodes.length > 0 ? 'success' : 'default'} 
+          label={`${nodes.length} Nodes`} 
+          color={nodes.length > 0 ? "success" : "default"} 
           variant="filled"
           size="medium"
           sx={{ fontWeight: 'bold' }}
@@ -33,7 +33,7 @@ export const StatusPanel: React.FC = () => {
       </Paper>
       
       <Divider sx={{ my: 3 }} />
-      <Chip label="Phase 1 ✓" color="primary" variant="outlined" size="small" />
+      <Chip label="Phase 1 Complete" color="primary" variant="outlined" size="small" />
     </Paper>
   );
 };
