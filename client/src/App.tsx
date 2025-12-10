@@ -6,6 +6,8 @@ import { Canvas } from './components/Canvas/Canvas';
 import { StatusPanel } from './components/Panels/StatusPanel';
 import { useWorkflowStore } from './hooks/useWorkflowStore';
 import { theme } from './theme';
+import { NodeFormPanel } from './components/Panels/NodeFormPanel';
+
 const App: React.FC = () => {
   const { undo, redo, currentHistoryIndex } = useWorkflowStore();
 
@@ -17,6 +19,7 @@ const App: React.FC = () => {
       <Box sx={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
         <Sidebar />
         <Canvas />
+        <NodeFormPanel />
         <StatusPanel />
       </Box>
     </Box>

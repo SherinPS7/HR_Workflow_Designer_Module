@@ -1,3 +1,4 @@
+// src/hooks/useWorkflowStore.ts
 import { create } from 'zustand';
 import type { WorkflowNode, WorkflowEdge, NodeType } from '../types/workflow.types';
 
@@ -8,7 +9,7 @@ interface WorkflowState {
   currentHistoryIndex: number;
   selectedNodeId: string | null;
   addNode: (type: NodeType, position?: { x: number; y: number }) => void;
-  setNodeSelected: (id: string | null) => void;
+  setSelectedNodeId: (id: string | null) => void;
   updateNodeData: (id: string, data: Partial<WorkflowNode['data']>) => void;
   undo: () => void;
   redo: () => void;
@@ -27,7 +28,6 @@ export const useWorkflowStore = create<WorkflowState>((set, get) => ({
       type: type as string,
       position,
       data: { label: `${type.toUpperCase()} NODE` },
-      selected: false,
     };
 
     set((state) => {
@@ -46,14 +46,7 @@ export const useWorkflowStore = create<WorkflowState>((set, get) => ({
     });
   },
 
-  setNodeSelected: (id) =>
-    set((state) => ({
-      nodes: state.nodes.map((node) => ({
-        ...node,
-        selected: id !== null && node.id === id,
-      })),
-      selectedNodeId: id,
-    })),
+  setSelectedNodeId: (id) => set({ selectedNodeId: id }),
 
   updateNodeData: (id, data) =>
     set((state) => {
