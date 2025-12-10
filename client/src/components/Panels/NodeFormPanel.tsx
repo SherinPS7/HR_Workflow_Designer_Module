@@ -2,6 +2,7 @@ import React, { ChangeEvent, useEffect, useState } from 'react';
 import { Paper, Typography, Box, TextField, MenuItem } from '@mui/material';
 import { useWorkflowStore } from '../../hooks/useWorkflowStore';
 import { fetchAutomations, AutomationDefinition } from '../../api/automations';
+import { Switch, FormControlLabel } from '@mui/material';
 
 const ROLE_OPTIONS = ['HR', 'Manager', 'IT', 'Finance', 'Other'];
 const APPROVER_ROLES = ['Manager', 'HRBP', 'Director'];
@@ -189,6 +190,23 @@ export const NodeFormPanel: React.FC = () => {
               InputLabelProps={{ shrink: true }}
             />
           </Box>
+          <Box sx={{ display: 'flex', gap: 1 }}>
+  <TextField
+    size="small"
+    fullWidth
+    label="Custom field key"
+    value={String(data?.customKey ?? '')}
+    onChange={handleChange('customKey')}
+  />
+  <TextField
+    size="small"
+    fullWidth
+    label="Custom field value"
+    value={String(data?.customValue ?? '')}
+    onChange={handleChange('customValue')}
+  />
+</Box>
+
         </>
       )}
 
@@ -285,36 +303,39 @@ export const NodeFormPanel: React.FC = () => {
       )}
 
       {/* END NODE FIELDS */}
-      {type === 'end' && (
-        <>
-          <Box>
-            <Typography variant="subtitle2" color="text.secondary">
-              End message
-            </Typography>
-            <TextField
-              size="small"
-              fullWidth
-              multiline
-              minRows={2}
-              value={String(data?.endMessage ?? '')}
-              onChange={handleChange('endMessage')}
-              placeholder="e.g. Onboarding complete"
-            />
-          </Box>
-          <Box>
-            <Typography variant="subtitle2" color="text.secondary">
-              Summary flag (true / false)
-            </Typography>
-            <TextField
-              size="small"
-              fullWidth
-              value={String(data?.summaryFlag ?? '')}
-              onChange={handleChange('summaryFlag')}
-              placeholder="true / false"
-            />
-          </Box>
-        </>
-      )}
+     {type === 'end' && (
+  <>
+    <Box>
+      <Typography variant="subtitle2" color="text.secondary">
+        End message
+      </Typography>
+      <TextField
+        size="small"
+        fullWidth
+        multiline
+        minRows={2}
+        value={String(data?.endMessage ?? '')}
+        onChange={handleChange('endMessage')}
+        placeholder="e.g. Onboarding complete"
+      />
+    </Box>
+    <Box>
+      <FormControlLabel
+        control={
+          <Switch
+            size="small"
+            checked={Boolean(data?.summaryFlag)}
+            onChange={(_, checked) =>
+              updateNodeData(selectedNode.id, { summaryFlag: checked })
+            }
+          />
+        }
+        label="Show summary at end"
+      />
+    </Box>
+  </>
+)}
+
     </Paper>
   );
 };

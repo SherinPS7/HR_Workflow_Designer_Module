@@ -1,24 +1,19 @@
+// utils/graphValidator.ts
 import type { WorkflowNode, WorkflowEdge } from '../types/workflow.types';
 
-export type ValidationErrorCode =
-  | 'NO_START'
-  | 'NO_END'
-  | 'UNREACHABLE_NODE';
-
 export interface ValidationError {
-  code: ValidationErrorCode;
+  code: string;
   message: string;
   nodeId?: string;
 }
 
 export interface ValidationResult {
-  isValid: boolean;
   errors: ValidationError[];
 }
 
 export function validateWorkflow(
   nodes: WorkflowNode[],
-  edges: WorkflowEdge[]
+  edges: WorkflowEdge[],
 ): ValidationResult {
   const errors: ValidationError[] = [];
 
@@ -26,54 +21,56 @@ export function validateWorkflow(
   const endNodes = nodes.filter((n) => n.type === 'end');
 
   if (startNodes.length === 0) {
-    errors.push({
-      code: 'NO_START',
-      message: 'Workflow must contain at least one Start node.',
-    });
+    errors.push({ code: 'NO_START', message: 'Workflow must contain a Start node.' });
+  }
+  if (startNodes.length > 1) {
+    errors.push({ code: 'MULTIPLE_START', message: 'Workflow must have exactly one Start node.' });
   }
 
-  if (endNodes.length === 0) {
-    errors.push({
-      code: 'NO_END',
-      message: 'Workflow should contain at least one End node.',
-    });
-  }
-
-  // Reachability from all start nodes
-  const reachable = new Set<string>();
-  const adjacency = new Map<string, string[]>();
+  const outgoingByNode = new Map<string, number>();
+  const incomingByNode = new Map<string, number>();
 
   edges.forEach((e) => {
-    if (!adjacency.has(e.source)) adjacency.set(e.source, []);
-    adjacency.get(e.source)!.push(e.target);
+    if (!e.source || !e.target) return;
+    outgoingByNode.set(e.source, (outgoingByNode.get(e.source) ?? 0) + 1);
+    incomingByNode.set(e.target, (incomingByNode.get(e.target) ?? 0) + 1);
   });
 
-  const visitFrom = (id: string) => {
-    const stack = [id];
-    const seen = new Set<string>();
-    while (stack.length) {
-      const current = stack.pop()!;
-      if (seen.has(current)) continue;
-      seen.add(current);
-      reachable.add(current);
-      const nexts = adjacency.get(current) ?? [];
-      nexts.forEach((n) => {
-        if (!seen.has(n)) stack.push(n);
-      });
-    }
-  };
-
-  startNodes.forEach((n) => visitFrom(n.id));
-
-  nodes.forEach((n) => {
-    if (n.type !== 'start' && !reachable.has(n.id)) {
+  // Start must have at least one outgoing edge
+  if (startNodes.length === 1) {
+    const start = startNodes[0];
+    if ((outgoingByNode.get(start.id) ?? 0) === 0) {
       errors.push({
-        code: 'UNREACHABLE_NODE',
-        nodeId: n.id,
-        message: `Node ${n.data?.label ?? n.id} is not reachable from any Start node.`,
+        code: 'START_NO_OUTGOING',
+        message: 'Start node must have at least one outgoing connection.',
+        nodeId: start.id,
+      });
+    }
+  }
+
+  // End nodes must have no outgoing edges
+  endNodes.forEach((end) => {
+    if ((outgoingByNode.get(end.id) ?? 0) > 0) {
+      errors.push({
+        code: 'END_HAS_OUTGOING',
+        message: 'End node cannot have outgoing connections.',
+        nodeId: end.id,
       });
     }
   });
 
-  return { isValid: errors.length === 0, errors };
+  // Optional: no isolated nodes
+  nodes.forEach((n) => {
+    const inDeg = incomingByNode.get(n.id) ?? 0;
+    const outDeg = outgoingByNode.get(n.id) ?? 0;
+    if (inDeg === 0 && outDeg === 0) {
+      errors.push({
+        code: 'ISOLATED_NODE',
+        message: 'Node is not connected to the workflow.',
+        nodeId: n.id,
+      });
+    }
+  });
+
+  return { errors };
 }
