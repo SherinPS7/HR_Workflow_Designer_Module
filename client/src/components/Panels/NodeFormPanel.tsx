@@ -1,6 +1,7 @@
-import React, { ChangeEvent } from 'react';
+import React, { ChangeEvent, useEffect, useState } from 'react';
 import { Paper, Typography, Box, TextField, MenuItem } from '@mui/material';
 import { useWorkflowStore } from '../../hooks/useWorkflowStore';
+import { fetchAutomations, AutomationDefinition } from '../../api/automations';
 
 const ROLE_OPTIONS = ['HR', 'Manager', 'IT', 'Finance', 'Other'];
 const APPROVER_ROLES = ['Manager', 'HRBP', 'Director'];
@@ -9,6 +10,18 @@ export const NodeFormPanel: React.FC = () => {
   const nodes = useWorkflowStore((s) => s.nodes);
   const selectedNodeId = useWorkflowStore((s) => s.selectedNodeId);
   const updateNodeData = useWorkflowStore((s) => s.updateNodeData);
+
+  const [automations, setAutomations] = useState<AutomationDefinition[]>([]);
+
+  useEffect(() => {
+    let mounted = true;
+    fetchAutomations().then((list) => {
+      if (mounted) setAutomations(list);
+    });
+    return () => {
+      mounted = false;
+    };
+  }, []);
 
   const selectedNode = nodes.find((n) => n.id === selectedNodeId);
 
@@ -225,27 +238,49 @@ export const NodeFormPanel: React.FC = () => {
               Action
             </Typography>
             <TextField
+              select
               size="small"
               fullWidth
               value={String(data?.action ?? '')}
               onChange={handleChange('action')}
-              placeholder="e.g. send_email"
-            />
+              placeholder="Select automated action"
+            >
+              {automations.map((auto) => (
+                <MenuItem key={auto.id} value={auto.id}>
+                  {auto.label}
+                </MenuItem>
+              ))}
+            </TextField>
           </Box>
-          <Box>
-            <Typography variant="subtitle2" color="text.secondary">
-              Parameters (JSON)
-            </Typography>
-            <TextField
-              size="small"
-              fullWidth
-              multiline
-              minRows={2}
-              value={String(data?.params ?? '')}
-              onChange={handleChange('params')}
-              placeholder='e.g. {"to":"user@company.com"}'
-            />
-          </Box>
+
+          {(() => {
+            const selected = automations.find((a) => a.id === data?.action);
+            if (!selected) return null;
+
+            const currentParams = (data?.params as Record<string, string>) || {};
+
+            return (
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                {selected.params.map((paramKey) => (
+                  <TextField
+                    key={paramKey}
+                    size="small"
+                    fullWidth
+                    label={paramKey}
+                    value={currentParams[paramKey] ?? ''}
+                    onChange={(e) =>
+                      updateNodeData(selectedNode.id, {
+                        params: {
+                          ...currentParams,
+                          [paramKey]: e.target.value,
+                        },
+                      })
+                    }
+                  />
+                ))}
+              </Box>
+            );
+          })()}
         </>
       )}
 
