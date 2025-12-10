@@ -1,16 +1,18 @@
 // src/hooks/useWorkflowStore.ts
 import { create } from 'zustand';
 import type { WorkflowNode, WorkflowEdge, NodeType } from '../types/workflow.types';
-
+import { validateWorkflow, type ValidationError } from '../utils/graphValidator';
 interface WorkflowState {
   nodes: WorkflowNode[];
   edges: WorkflowEdge[];
   history: Array<{ nodes: WorkflowNode[]; edges: WorkflowEdge[]; action: string }>;
   currentHistoryIndex: number;
   selectedNodeId: string | null;
+  validationErrors: ValidationError[];                    // NEW
   addNode: (type: NodeType, position?: { x: number; y: number }) => void;
   setSelectedNodeId: (id: string | null) => void;
   updateNodeData: (id: string, data: Partial<WorkflowNode['data']>) => void;
+  runValidation: () => void;                              // NEW
   undo: () => void;
   redo: () => void;
 }
@@ -21,6 +23,7 @@ export const useWorkflowStore = create<WorkflowState>((set, get) => ({
   history: [],
   currentHistoryIndex: -1,
   selectedNodeId: null,
+  validationErrors: [],
 
   addNode: (type, position = { x: Math.random() * 300 + 100, y: Math.random() * 200 + 100 }) => {
     const newNode: WorkflowNode = {
@@ -66,7 +69,11 @@ export const useWorkflowStore = create<WorkflowState>((set, get) => ({
         currentHistoryIndex: Math.min(state.currentHistoryIndex + 1, 19),
       };
     }),
-
+runValidation: () => {
+    const { nodes, edges } = get();
+    const result = validateWorkflow(nodes, edges);
+    set({ validationErrors: result.errors });
+  },
   undo: () => {
     const state = get();
     if (state.currentHistoryIndex > 0) {
